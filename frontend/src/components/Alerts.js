@@ -12,6 +12,7 @@ function Alerts() {
     product_lifetime_expiry: 0
   });
 
+  // ✅ Use baseURL properly
   const baseURL = "http://localhost:5000";
 
   /* LOAD ALERTS */
@@ -21,10 +22,10 @@ function Alerts() {
     try {
 
       const res = await axios.get(
-        "http://localhost:5000/alerts-today"
+        `${baseURL}/alerts-today`
       );
 
-      console.log("ALERTS:", res.data); // 🔍 debug
+      console.log("ALERTS:", res.data);
 
       setData(res.data || {});
 
@@ -53,35 +54,12 @@ function Alerts() {
 
       <div className="row g-3">
 
-        <Card
-          title="Warranty Maintenance"
-          value={data.warranty_maintenance}
-        />
-
-        <Card
-          title="Warranty Expiry"
-          value={data.warranty_expiry}
-        />
-
-        <Card
-          title="Stamping Expiry"
-          value={data.stamping_expiry}
-        />
-
-        <Card
-          title="AMC Maintenance"
-          value={data.amc_maintenance}
-        />
-
-        <Card
-          title="AMC Expiry"
-          value={data.amc_expiry}
-        />
-
-        <Card
-          title="Product Lifetime Expiry"
-          value={data.product_lifetime_expiry}
-        />
+        <Card title="Warranty Maintenance" value={data.warranty_maintenance} />
+        <Card title="Warranty Expiry" value={data.warranty_expiry} />
+        <Card title="Stamping Expiry" value={data.stamping_expiry} />
+        <Card title="AMC Maintenance" value={data.amc_maintenance} />
+        <Card title="AMC Expiry" value={data.amc_expiry} />
+        <Card title="Product Lifetime Expiry" value={data.product_lifetime_expiry} />
 
       </div>
 
@@ -100,8 +78,7 @@ function Card({ title, value }) {
       <div
         className="card text-white"
         style={{
-          background:
-            "linear-gradient(135deg,#3a7bd5,#00d2ff)",
+          background: "linear-gradient(135deg,#3a7bd5,#00d2ff)",
           borderRadius: 12
         }}
       >
