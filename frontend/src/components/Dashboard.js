@@ -5,33 +5,36 @@ function Dashboard() {
 
   /* ================= STATES ================= */
 
-  const [tasks, setTasks] =
-    useState([]);
+  const [tasks, setTasks] = useState([]);
 
-  const [stats, setStats] =
-    useState({
-      total: 0,
-      open: 0,
-      completed: 0
-    });
+  const [stats, setStats] = useState({
+    total: 0,
+    open: 0,
+    completed: 0
+  });
 
-  const baseURL =
-    "http://localhost:5000";
+  /* 🆕 TEAM STATS */
+
+  const [teamStats, setTeamStats] = useState({
+    LAN: 0,
+    UPS: 0,
+    CCTV: 0
+  });
+
+  const baseURL = "http://localhost:5000";
 
   /* =====================================================
-     LOAD ASSIGNED TASKS
+     LOAD TASK LIST
   ===================================================== */
 
   const loadTasks = async () => {
 
     try {
 
-      const res =
-        await axios.get(
-          `${baseURL}/engineer-tasks`
-        );
+      const res = await axios.get(
+        `${baseURL}/engineer-tasks`
+      );
 
-      /* No filter remove */
       setTasks(res.data || []);
 
     } catch (err) {
@@ -51,10 +54,9 @@ function Dashboard() {
 
     try {
 
-      const res =
-        await axios.get(
-          "http://localhost:5000/tasks"
-        );
+      const res = await axios.get(
+        `${baseURL}/tasks`
+      );
 
       setStats(res.data);
 
@@ -68,29 +70,52 @@ function Dashboard() {
   };
 
   /* =====================================================
+     🆕 LOAD TEAM STATS
+  ===================================================== */
+
+  const loadTeamStats = async () => {
+
+    try {
+
+      const res = await axios.get(
+        `${baseURL}/team-stats`
+      );
+
+      setTeamStats(res.data);
+
+    } catch (err) {
+
+      console.error(
+        "Team Stats Error:",
+        err.message
+      );
+    }
+  };
+
+  /* =====================================================
      COMPLETE TASK
   ===================================================== */
 
-  const completeTask =
-    async id => {
+  const completeTask = async id => {
 
-      try {
+    try {
 
-        await axios.post(
-          `${baseURL}/complete-task/${id}`
-        );
+      await axios.post(
+        `${baseURL}/complete-task/${id}`
+      );
 
-        loadTasks();
-        loadStats();
+      loadTasks();
+      loadStats();
+      loadTeamStats();
 
-      } catch (err) {
+    } catch (err) {
 
-        console.error(
-          "Complete Error:",
-          err.message
-        );
-      }
-    };
+      console.error(
+        "Complete Error:",
+        err.message
+      );
+    }
+  };
 
   /* =====================================================
      AUTO REFRESH
@@ -100,14 +125,15 @@ function Dashboard() {
 
     loadTasks();
     loadStats();
+    loadTeamStats();
 
-    const interval =
-      setInterval(() => {
+    const interval = setInterval(() => {
 
-        loadTasks();
-        loadStats();
+      loadTasks();
+      loadStats();
+      loadTeamStats();
 
-      }, 5000);
+    }, 5000);
 
     return () =>
       clearInterval(interval);
@@ -122,160 +148,123 @@ function Dashboard() {
 
     <div className="container-fluid">
 
-      {/* ================= ROW 1 ================= */}
+      {/* ================= TOP STAT CARDS ================= */}
 
       <div className="row">
 
-        {/* TOTAL */}
-
-        <div className="col-md-3">
-
-          <div className="card text-white bg-primary mb-3">
-
-            <div className="card-body">
-
-              <h5>Total Calls</h5>
-
-              <h2>{stats.total}</h2>
-
-            </div>
-
+        <div className="col-lg-3 col-md-6 mb-3">
+          <div className="card text-white bg-primary p-3">
+            <h5>Total Calls</h5>
+            <h2>{stats.total}</h2>
           </div>
-
         </div>
 
-        {/* OPEN */}
-
-        <div className="col-md-3">
-
-          <div className="card text-white bg-info mb-3">
-
-            <div className="card-body">
-
-              <h5>Open Calls</h5>
-
-              <h2>{stats.open}</h2>
-
-            </div>
-
+        <div className="col-lg-3 col-md-6 mb-3">
+          <div className="card text-white bg-info p-3">
+            <h5>Open Calls</h5>
+            <h2>{stats.open}</h2>
           </div>
-
         </div>
 
-        {/* ASSIGNED */}
-
-        <div className="col-md-3">
-
-          <div className="card mb-3">
-
-            <div className="card-body">
-
-              <h5>
-                Engineer Assigned Tasks ▼
-              </h5>
-
-              <p>
-                {tasks.length} Tasks
-              </p>
-
-              {tasks.length === 0 && (
-                <p>No Tasks</p>
-              )}
-
-              {tasks.map(t => (
-
-                <div
-                  key={t.id}
-                  className="border p-2 mb-2"
-                >
-
-                  <b>{t.engineer}</b><br />
-
-                  {t.customer}<br />
-
-                  {t.product} — {t.issue}
-
-                  <br />
-
-                  <button
-                    className="btn btn-success btn-sm mt-2"
-                    onClick={() =>
-                      completeTask(t.id)
-                    }
-                  >
-                    Complete
-                  </button>
-
-                </div>
-
-              ))}
-
-            </div>
-
+        <div className="col-lg-3 col-md-6 mb-3">
+          <div className="card text-white bg-success p-3">
+            <h5>Closed</h5>
+            <h2>{stats.completed}</h2>
           </div>
-
         </div>
 
-        {/* CLOSED */}
-
-        <div className="col-md-3">
-
-          <div className="card text-white bg-success mb-3">
-
-            <div className="card-body">
-
-              <h5>Closed</h5>
-
-              <h2>
-                {stats.completed}
-              </h2>
-
-            </div>
-
+        <div className="col-lg-3 col-md-6 mb-3">
+          <div className="card bg-light p-3">
+            <h5>Assigned Tasks</h5>
+            <h2>{tasks.length}</h2>
           </div>
-
         </div>
 
       </div>
 
-      {/* ================= ROW 2 ================= */}
+      {/* ================= 🆕 TEAM CARDS ================= */}
 
       <div className="row">
 
-        <div className="col-md-6">
-
-          <div className="card">
-
-            <div className="card-body">
-
-              <h5>Daily Sales</h5>
-
-              <p>
-                Chart integrate pannalaam later
-              </p>
-
-            </div>
-
+        <div className="col-md-4 mb-3">
+          <div className="card text-white bg-dark p-3">
+            <h5>LAN Team</h5>
+            <h2>{teamStats.LAN}</h2>
           </div>
-
         </div>
 
-        <div className="col-md-6">
+        <div className="col-md-4 mb-3">
+          <div className="card text-white bg-warning p-3">
+            <h5>UPS / Inverter</h5>
+            <h2>{teamStats.UPS}</h2>
+          </div>
+        </div>
 
-          <div className="card">
+        <div className="col-md-4 mb-3">
+          <div className="card text-white bg-secondary p-3">
+            <h5>CCTV / Camera</h5>
+            <h2>{teamStats.CCTV}</h2>
+          </div>
+        </div>
 
-            <div className="card-body">
+      </div>
 
-              <h5>Completed Tasks</h5>
+      {/* ================= TASK LIST ================= */}
 
-              <p>
-                Auto updated from system
-              </p>
+      <div className="card p-3 mb-4">
 
-            </div>
+        <h5>Engineer Assigned Tasks ▼</h5>
+
+        {tasks.length === 0 && (
+          <p>No Tasks</p>
+        )}
+
+        {tasks.map(t => (
+
+          <div
+            key={t.id}
+            className="border rounded p-2 mb-2"
+          >
+
+            <b>{t.engineer}</b><br />
+
+            {t.customer}<br />
+
+            {t.product} — {t.issue}
+
+            <br />
+
+            <button
+              className="btn btn-success btn-sm mt-2"
+              onClick={() =>
+                completeTask(t.id)
+              }
+            >
+              Complete
+            </button>
 
           </div>
 
+        ))}
+
+      </div>
+
+      {/* ================= EXTRA CARDS ================= */}
+
+      <div className="row">
+
+        <div className="col-md-6 mb-3">
+          <div className="card p-3">
+            <h5>Daily Sales</h5>
+            <p>Chart integrate pannalaam later</p>
+          </div>
+        </div>
+
+        <div className="col-md-6 mb-3">
+          <div className="card p-3">
+            <h5>Completed Tasks</h5>
+            <p>Auto updated from system</p>
+          </div>
         </div>
 
       </div>
