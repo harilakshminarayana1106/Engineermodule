@@ -680,6 +680,41 @@ router.post("/book-complaint", async (req, res) => {
 
 });
 
+/* TEAM STATS */
+
+router.get("/team-stats", async (req, res) => {
+
+  const lan = await pool.query(`
+    SELECT COUNT(*)
+    FROM tasks t
+    JOIN engineers e
+    ON t.engineer = e.name
+    WHERE e.team='LAN'
+  `);
+
+  const ups = await pool.query(`
+    SELECT COUNT(*)
+    FROM tasks t
+    JOIN engineers e
+    ON t.engineer = e.name
+    WHERE e.team='UPS'
+  `);
+
+  const cctv = await pool.query(`
+    SELECT COUNT(*)
+    FROM tasks t
+    JOIN engineers e
+    ON t.engineer = e.name
+    WHERE e.team='CCTV'
+  `);
+
+  res.json({
+    LAN: parseInt(lan.rows[0].count),
+    UPS: parseInt(ups.rows[0].count),
+    CCTV: parseInt(cctv.rows[0].count)
+  });
+
+});
 
 
 
