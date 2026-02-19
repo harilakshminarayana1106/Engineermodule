@@ -441,7 +441,6 @@ router.get(
       customers: data.rows
     });
 });
-
 /* ===================================================
    🔔 NOTIFICATIONS
 =================================================== */
@@ -449,29 +448,51 @@ router.get(
 /* LIST */
 router.get("/notifications", async (req, res) => {
 
-  const data = await pool.query(
-    "SELECT * FROM notifications ORDER BY id DESC"
-  );
+  try {
 
-  res.json(data.rows);
+    const data = await pool.query(
+      "SELECT * FROM notifications ORDER BY id DESC"
+    );
+
+    res.json(data.rows);
+
+  } catch (err) {
+
+    console.error("Notifications Fetch Error:", err.message);
+    res.status(500).json({ error: "Server Error" });
+
+  }
+
 });
+
 
 /* COUNT */
 router.get("/notifications-count", async (req, res) => {
 
-  const data = await pool.query(
-    "SELECT COUNT(*) FROM notifications WHERE is_read=FALSE"
-  );
+  try {
 
-  res.json({
-    count: parseInt(data.rows[0].count)
-  });
+    const data = await pool.query(
+      "SELECT COUNT(*) FROM notifications WHERE is_read=FALSE"
+    );
+
+    res.json({
+      count: parseInt(data.rows[0].count)
+    });
+
+  } catch (err) {
+
+    console.error("Notifications Count Error:", err.message);
+    res.status(500).json({ error: "Server Error" });
+
+  }
+
 });
 
+
 /* MARK SINGLE READ */
-router.put(
-  "/notifications-read/:id",
-  async (req, res) => {
+router.put("/notifications-read/:id", async (req, res) => {
+
+  try {
 
     await pool.query(
       `UPDATE notifications
@@ -481,12 +502,21 @@ router.put(
     );
 
     res.json({ success: true });
+
+  } catch (err) {
+
+    console.error("Mark Single Read Error:", err.message);
+    res.status(500).json({ error: "Server Error" });
+
+  }
+
 });
 
+
 /* MARK ALL READ */
-router.put(
-  "/notifications-read-all",
-  async (req, res) => {
+router.put("/notifications-read-all", async (req, res) => {
+
+  try {
 
     await pool.query(
       `UPDATE notifications
@@ -494,7 +524,16 @@ router.put(
     );
 
     res.json({ success: true });
+
+  } catch (err) {
+
+    console.error("Mark All Read Error:", err.message);
+    res.status(500).json({ error: "Server Error" });
+
+  }
+
 });
+
 
 /* ===================================================
    📊 DASHBOARD STATS
@@ -542,28 +581,21 @@ router.get("/alerts-today", (req, res) => {
    ENGINEERS BY DEPARTMENT
 =================================================== */
 
-router.get("/engineers-dept/:dept", async (req, res) => {
+router.get(
+  "/engineers-dept/:department",
+  async (req, res) => {
 
-  const { dept } = req.params;
-
-  try {
+    const { department } = req.params;
 
     const data = await pool.query(
-      `SELECT name
+      `SELECT *
        FROM engineers
-       WHERE team = $1
+       WHERE department=$1
        ORDER BY name`,
-      [dept]
+      [department]
     );
 
     res.json(data.rows);
-
-  } catch (err) {
-
-    console.error(err);
-    res.status(500).send("Engineer Fetch Failed");
-
-  }
 });
 
 
