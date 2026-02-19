@@ -5,76 +5,48 @@ import {
   Popup
 } from "react-leaflet";
 
-import L from "leaflet";
+function NearbyMap({ engineerLocation, customers }) {
 
-/* ICONS */
-
-const redIcon = new L.Icon({
-  iconUrl:
-    "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
-  iconSize: [32, 32]
-});
-
-const blueIcon = new L.Icon({
-  iconUrl:
-    "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-  iconSize: [32, 32]
-});
-
-function NearbyMap({ engineer, customers }) {
-
-  if (!engineer) return null;
+  if (!engineerLocation) return null;
 
   return (
 
     <MapContainer
       center={[
-        engineer.latitude,
-        engineer.longitude
+        engineerLocation.latitude,
+        engineerLocation.longitude
       ]}
       zoom={13}
-      style={{ height: "400px" }}
+      style={{
+        height: "400px",
+        width: "100%"
+      }}
     >
 
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-      {/* 🔴 ENGINEER */}
-
-      <Marker
-        position={[
-          engineer.latitude,
-          engineer.longitude
-        ]}
-        icon={redIcon}
-      >
+      <Marker position={[
+        engineerLocation.latitude,
+        engineerLocation.longitude
+      ]}>
         <Popup>
-          👨‍🔧 {engineer.name}
+          {engineerLocation.name}
         </Popup>
       </Marker>
 
-      {/* 🔵 CUSTOMERS */}
-
-      {customers.map((c, i) => (
-
-        <Marker
-          key={i}
+      {customers.map((c,i)=>(
+        <Marker key={i}
           position={[
             c.latitude,
             c.longitude
-          ]}
-          icon={blueIcon}
-        >
+          ]}>
           <Popup>
-            🏢 {c.customer}
-            <br />
-            {c.product}
+            {c.customer}
           </Popup>
         </Marker>
-
       ))}
 
     </MapContainer>
-
   );
 }
 
