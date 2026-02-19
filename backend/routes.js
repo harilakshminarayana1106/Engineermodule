@@ -542,21 +542,28 @@ router.get("/alerts-today", (req, res) => {
    ENGINEERS BY DEPARTMENT
 =================================================== */
 
-router.get(
-  "/engineers-dept/:department",
-  async (req, res) => {
+router.get("/engineers-dept/:dept", async (req, res) => {
 
-    const { department } = req.params;
+  const { dept } = req.params;
+
+  try {
 
     const data = await pool.query(
-      `SELECT *
+      `SELECT name
        FROM engineers
-       WHERE department=$1
+       WHERE team = $1
        ORDER BY name`,
-      [department]
+      [dept]
     );
 
     res.json(data.rows);
+
+  } catch (err) {
+
+    console.error(err);
+    res.status(500).send("Engineer Fetch Failed");
+
+  }
 });
 
 
