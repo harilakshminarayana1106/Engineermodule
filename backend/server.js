@@ -23,7 +23,10 @@ const pool = require("./db");
    MIDDLEWARE
 ====================================================== */
 
-app.use(cors());
+app.use(cors({
+  origin: "*",   // Later restrict to frontend domain
+}));
+
 app.use(express.json());
 
 /* ======================================================
@@ -39,6 +42,28 @@ app.use("/", routes);
 
 app.get("/", (req, res) => {
   res.send("🚀 CRM Backend Running Successfully");
+});
+
+/* ======================================================
+   DB TEST ROUTE (NEON CHECK)
+====================================================== */
+
+app.get("/db-test", async (req, res) => {
+
+  try {
+
+    const result =
+      await pool.query("SELECT NOW()");
+
+    res.json(result.rows);
+
+  } catch (err) {
+
+    console.error("DB Test Error:", err.message);
+    res.status(500).send("Database Error");
+
+  }
+
 });
 
 /* ======================================================
@@ -96,7 +121,9 @@ const PORT =
   process.env.PORT || 5000;
 
 app.listen(PORT, () => {
+
   console.log(
     `🚀 Server running → http://localhost:${PORT}`
   );
+
 });
