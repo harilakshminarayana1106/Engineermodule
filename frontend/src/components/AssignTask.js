@@ -6,6 +6,8 @@ function AssignTask() {
 
   const navigate = useNavigate();
 
+  /* ================= STATES ================= */
+
   const [departments, setDepartments] = useState([]);
   const [engineers, setEngineers] = useState([]);
 
@@ -21,30 +23,63 @@ function AssignTask() {
 
   const baseURL = "http://localhost:5000";
 
-  /* LOAD DEPARTMENTS */
+  /* =====================================================
+     LOAD DEPARTMENTS
+  ===================================================== */
 
   useEffect(() => {
-    axios.get(`${baseURL}/departments`)
-      .then(res => setDepartments(res.data || []))
-      .catch(err =>
-        console.error("Dept Load Error:", err.message)
-      );
+
+    loadDepartments();
+
   }, []);
 
-  /* LOAD ENGINEERS */
+  const loadDepartments = async () => {
+
+    try {
+
+      const res = await axios.get(
+        `${baseURL}/departments`
+      );
+
+      setDepartments(res.data || []);
+
+    } catch (err) {
+
+      console.error(
+        "Dept Load Error:",
+        err.message
+      );
+    }
+  };
+
+  /* =====================================================
+     LOAD ENGINEERS BY DEPARTMENT
+  ===================================================== */
 
   const loadEngineers = async dept => {
 
     if (!dept) return;
 
-    const res = await axios.get(
-      `${baseURL}/engineers-dept/${dept}`
-    );
+    try {
 
-    setEngineers(res.data || []);
+      const res = await axios.get(
+        `${baseURL}/engineers-dept/${dept}`
+      );
+
+      setEngineers(res.data || []);
+
+    } catch (err) {
+
+      console.error(
+        "Engineer Load Error:",
+        err.message
+      );
+    }
   };
 
-  /* CHANGE */
+  /* =====================================================
+     HANDLE CHANGE
+  ===================================================== */
 
   const handleChange = e => {
 
@@ -54,6 +89,8 @@ function AssignTask() {
       ...prev,
       [name]: value
     }));
+
+    /* Department change → load engineers */
 
     if (name === "department") {
 
@@ -67,7 +104,9 @@ function AssignTask() {
     }
   };
 
-  /* SUBMIT */
+  /* =====================================================
+     SUBMIT TASK
+  ===================================================== */
 
   const handleSubmit = async e => {
 
@@ -75,23 +114,35 @@ function AssignTask() {
 
     try {
 
-      await axios.post(
+      const res = await axios.post(
         `${baseURL}/assign-task`,
         form
       );
 
-      alert("Task Assigned ✅");
+      alert(res.data.message || "Task Assigned ✅");
+
       navigate("/");
 
-    } catch {
+    } catch (err) {
+
+      console.error(
+        "Assign Error:",
+        err.message
+      );
 
       alert("Assign Failed ❌");
     }
   };
 
+  /* =====================================================
+     UI
+  ===================================================== */
+
   return (
 
     <div className="container mt-3">
+
+      {/* 🔙 BACK BUTTON */}
 
       <button
         className="btn btn-secondary mb-3"
@@ -102,16 +153,20 @@ function AssignTask() {
 
       <div className="card p-4">
 
-        <h4>Assign New Task</h4>
+        <h4 className="mb-3">
+          Assign New Task
+        </h4>
 
         <form onSubmit={handleSubmit}>
 
           <div className="row">
 
-            {/* DEPARTMENT */}
+            {/* ================= DEPARTMENT ================= */}
 
             <div className="col-md-6 mb-3">
+
               <label>Department</label>
+
               <select
                 name="department"
                 className="form-control"
@@ -119,22 +174,37 @@ function AssignTask() {
                 onChange={handleChange}
                 required
               >
+
                 <option value="">
                   Select Department
                 </option>
 
                 {departments.map(d => (
-                  <option key={d.name}>
+
+                  <option
+                    key={d.name}
+                    value={d.name}
+                  >
                     {d.name}
                   </option>
+
                 ))}
+
               </select>
+
             </div>
 
-            {/* ENGINEER */}
+            {/* ================= ENGINEER ================= */}
 
             <div className="col-md-6 mb-3">
-              <label>Engineer</label>
+
+              <label>
+                Engineer
+                <small className="text-muted ms-2">
+                  (First task only manual)
+                </small>
+              </label>
+
               <select
                 name="engineer"
                 className="form-control"
@@ -142,33 +212,44 @@ function AssignTask() {
                 onChange={handleChange}
                 required
               >
+
                 <option value="">
                   Select Engineer
                 </option>
 
                 {engineers.map(e => (
-                  <option key={e.name}>
+
+                  <option
+                    key={e.name}
+                    value={e.name}
+                  >
                     {e.name}
                   </option>
+
                 ))}
+
               </select>
+
             </div>
 
-            {/* CUSTOMER */}
+            {/* ================= CUSTOMER ================= */}
 
             <div className="col-md-6 mb-3">
+
               <input
                 name="customer"
-                placeholder="Customer"
+                placeholder="Customer Name"
                 className="form-control"
                 onChange={handleChange}
                 required
               />
+
             </div>
 
-            {/* PRODUCT */}
+            {/* ================= PRODUCT ================= */}
 
             <div className="col-md-6 mb-3">
+
               <input
                 name="product"
                 placeholder="Product"
@@ -176,31 +257,39 @@ function AssignTask() {
                 onChange={handleChange}
                 required
               />
+
             </div>
 
-            {/* ISSUE */}
+            {/* ================= ISSUE ================= */}
 
             <div className="col-md-6 mb-3">
+
               <select
                 name="issue"
                 className="form-control"
                 onChange={handleChange}
                 required
               >
+
                 <option value="">
                   Select Issue
                 </option>
+
                 <option>Not Working</option>
                 <option>Battery Problem</option>
                 <option>Installation</option>
                 <option>Maintenance</option>
+
               </select>
+
             </div>
 
-            {/* DATES */}
+            {/* ================= ISSUE DATE ================= */}
 
             <div className="col-md-3 mb-3">
+
               <label>Issue Date</label>
+
               <input
                 type="date"
                 name="issue_date"
@@ -208,10 +297,15 @@ function AssignTask() {
                 onChange={handleChange}
                 required
               />
+
             </div>
 
+            {/* ================= AVAILABLE DATE ================= */}
+
             <div className="col-md-3 mb-3">
+
               <label>Available Date</label>
+
               <input
                 type="date"
                 name="available_date"
@@ -219,12 +313,17 @@ function AssignTask() {
                 onChange={handleChange}
                 required
               />
+
             </div>
 
           </div>
 
+          {/* ================= SUBMIT ================= */}
+
           <button className="btn btn-primary w-100">
+
             Assign Task
+
           </button>
 
         </form>
