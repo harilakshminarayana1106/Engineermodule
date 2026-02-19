@@ -1,4 +1,10 @@
 /* ======================================================
+   LOAD ENV
+====================================================== */
+
+require("dotenv").config();
+
+/* ======================================================
    SERVER SETUP
 ====================================================== */
 
@@ -9,10 +15,9 @@ const app = express();
 
 /* ======================================================
    DB CONNECTION
-   (Change path if different)
 ====================================================== */
 
-const pool = require("./db");   // ← PostgreSQL / MySQL connection file
+const pool = require("./db");
 
 /* ======================================================
    MIDDLEWARE
@@ -87,7 +92,8 @@ app.get("/team-stats", async (req, res) => {
    SERVER START
 ====================================================== */
 
-const PORT = 5000;
+const PORT =
+  process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(
