@@ -8,6 +8,13 @@ const cors = require("cors");
 const app = express();
 
 /* ======================================================
+   DB CONNECTION
+   (Change path if different)
+====================================================== */
+
+const pool = require("./db");   // ← PostgreSQL / MySQL connection file
+
+/* ======================================================
    MIDDLEWARE
 ====================================================== */
 
@@ -30,6 +37,53 @@ app.get("/", (req, res) => {
 });
 
 /* ======================================================
+   TEAM STATS API
+====================================================== */
+
+app.get("/team-stats", async (req, res) => {
+
+  try {
+
+    const lan = await pool.query(`
+      SELECT COUNT(*) 
+      FROM tasks t
+      JOIN engineers e
+      ON t.engineer = e.name
+      WHERE e.team = 'LAN'
+    `);
+
+    const ups = await pool.query(`
+      SELECT COUNT(*) 
+      FROM tasks t
+      JOIN engineers e
+      ON t.engineer = e.name
+      WHERE e.team = 'UPS'
+    `);
+
+    const cctv = await pool.query(`
+      SELECT COUNT(*) 
+      FROM tasks t
+      JOIN engineers e
+      ON t.engineer = e.name
+      WHERE e.team = 'CCTV'
+    `);
+
+    res.json({
+      LAN: parseInt(lan.rows[0].count),
+      UPS: parseInt(ups.rows[0].count),
+      CCTV: parseInt(cctv.rows[0].count)
+    });
+
+  } catch (err) {
+
+    console.error("Team Stats Error:", err.message);
+    res.status(500).send("Server Error");
+
+  }
+
+});
+
+/* ======================================================
    SERVER START
 ====================================================== */
 
@@ -37,6 +91,6 @@ const PORT = 5000;
 
 app.listen(PORT, () => {
   console.log(
-    `Server running → http://localhost:${PORT}`
+    `🚀 Server running → http://localhost:${PORT}`
   );
 });
