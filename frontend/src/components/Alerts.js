@@ -13,7 +13,7 @@ function Alerts() {
   });
 
   // ✅ Use baseURL properly
-  const baseURL = "http://localhost:5000";
+  const baseURL = "https://engineermodule.onrender.com";
 
   /* LOAD ALERTS */
 
