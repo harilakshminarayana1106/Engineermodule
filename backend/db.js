@@ -5,17 +5,16 @@
 require("dotenv").config();
 
 /* ======================================================
-   PG CONNECTION
+   PG CONNECTION (NEON)
 ====================================================== */
 
 const { Pool } = require("pg");
 
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
 /* ======================================================
@@ -25,9 +24,9 @@ const pool = new Pool({
 pool.connect((err) => {
 
   if (err) {
-    console.log("DB Connection Error ❌", err);
+    console.log("Neon DB Connection Error ❌", err);
   } else {
-    console.log("PostgreSQL Connected ✅");
+    console.log("Neon PostgreSQL Connected ✅");
   }
 
 });
