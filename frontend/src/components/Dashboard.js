@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
 
@@ -22,6 +23,11 @@ function Dashboard() {
   });
 
   const baseURL = "https://engineermodule.onrender.com";
+
+  /* 🆕 SESSION NAVIGATE */
+
+  const navigate = useNavigate();
+
 
   /* =====================================================
      LOAD TASK LIST
@@ -46,6 +52,7 @@ function Dashboard() {
     }
   };
 
+
   /* =====================================================
      LOAD DASHBOARD STATS
   ===================================================== */
@@ -69,6 +76,7 @@ function Dashboard() {
     }
   };
 
+
   /* =====================================================
      🆕 LOAD TEAM STATS
   ===================================================== */
@@ -91,6 +99,7 @@ function Dashboard() {
       );
     }
   };
+
 
   /* =====================================================
      COMPLETE TASK
@@ -117,6 +126,7 @@ function Dashboard() {
     }
   };
 
+
   /* =====================================================
      AUTO REFRESH
   ===================================================== */
@@ -139,6 +149,26 @@ function Dashboard() {
       clearInterval(interval);
 
   }, []);
+
+
+  /* =====================================================
+     🔐 SESSION TIMEOUT (30 MIN)
+  ===================================================== */
+
+  useEffect(() => {
+
+    const timer = setTimeout(() => {
+
+      localStorage.removeItem("user");
+
+      navigate("/login");
+
+    }, 30 * 60 * 1000); // 30 minutes
+
+    return () => clearTimeout(timer);
+
+  }, [navigate]);
+
 
   /* =====================================================
      UI
@@ -182,7 +212,8 @@ function Dashboard() {
 
       </div>
 
-      {/* ================= 🆕 TEAM CARDS ================= */}
+
+      {/* ================= TEAM CARDS ================= */}
 
       <div className="row">
 
@@ -208,6 +239,7 @@ function Dashboard() {
         </div>
 
       </div>
+
 
       {/* ================= TASK LIST ================= */}
 
@@ -249,6 +281,7 @@ function Dashboard() {
 
       </div>
 
+
       {/* ================= EXTRA CARDS ================= */}
 
       <div className="row">
@@ -270,7 +303,9 @@ function Dashboard() {
       </div>
 
     </div>
+
   );
+
 }
 
 export default Dashboard;

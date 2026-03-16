@@ -2,6 +2,43 @@ const express = require("express");
 const router = express.Router();
 const pool = require("./db");
 
+
+/* ================= LOGIN ================= */
+
+r/* ================= LOGIN ================= */
+
+router.post("/login", async (req,res)=>{
+
+  try{
+
+    const {email,password} = req.body;
+
+    const user = await pool.query(
+      "SELECT * FROM users WHERE email=$1 AND password=$2",
+      [email,password]
+    );
+
+    if(user.rows.length === 0){
+      return res.json({
+        success:false,
+        message:"Invalid login"
+      });
+    }
+
+    res.json({
+      success:true,
+      user:user.rows[0]
+    });
+
+  }catch(err){
+
+    console.log(err);
+    res.status(500).json({error:"Login failed"});
+
+  }
+
+});
+
 /* ===================================================
    1️⃣ ENGINEERS LIST
 =================================================== */
@@ -170,96 +207,144 @@ router.get("/engineer-tasks", async (req, res) => {
 /* ===================================================
    6️⃣ COMPLETE TASK + AUTO NEXT
 =================================================== */
+
 router.post("/complete-task/:id", async (req, res) => {
 
-  const { id } = req.params;
+  try {
 
-  const taskRes = await pool.query(
-    "SELECT * FROM tasks WHERE id=$1",
-    [id]
-  );
+    const { id } = req.params;
 
-  const task = taskRes.rows[0];
+    /* 1️⃣ Fetch Task */
+    const taskRes = await pool.query(
+      "SELECT * FROM tasks WHERE id=$1",
+      [id]
+    );
 
-  if (!task)
-    return res.json({ error: "Task not found" });
+    const task = taskRes.rows[0];
 
-  /* COMPLETE */
-  await pool.query(
-    `UPDATE tasks
-     SET status='completed'
-     WHERE id=$1`,
-    [id]
-  );
+    if (!task) {
+      return res.json({ error: "Task not found" });
+    }
 
-  /* NOTIFICATION */
-  await pool.query(
-    `INSERT INTO notifications
-     (engineer,issue,product,is_read,time)
-     VALUES ($1,$2,$3,FALSE,NOW())`,
-    [
-      task.engineer,
-      task.issue,
-      task.product
-    ]
-  );
+    /* 2️⃣ Mark Completed */
+    await pool.query(
+      `UPDATE tasks
+       SET status='completed'
+       WHERE id=$1`,
+      [id]
+    );
 
-  /* TODAY COUNT */
-  const countRes = await pool.query(
-    `SELECT COUNT(*)
-     FROM tasks
-     WHERE engineer=$1
-     AND DATE(issue_date)=CURRENT_DATE`,
-    [task.engineer]
-  );
+    /* 3️⃣ Insert Notification */
+    await pool.query(
+      `INSERT INTO notifications
+       (engineer, issue, product, is_read, time)
+       VALUES ($1,$2,$3,FALSE,NOW())`,
+      [task.engineer, task.issue, task.product]
+    );
 
-  if (parseInt(countRes.rows[0].count) >= 3)
-    return res.json({
+    /* ===================================================
+       4️⃣ TIME CHECK (IST)
+    =================================================== */
+
+    const hour = parseInt(
+      new Date().toLocaleString("en-US", {
+        timeZone: "Asia/Kolkata",
+        hour: "numeric",
+        hour12: false
+      })
+    );
+
+    if (hour >= 15) {
+      return res.json({
+        success: true,
+        message: "Auto Assign Stopped (After 3 PM IST)"
+      });
+    }
+
+    /* ===================================================
+       5️⃣ DAILY COMPLETED COUNT
+    =================================================== */
+
+    const countRes = await pool.query(
+      `SELECT COUNT(*)
+       FROM tasks
+       WHERE engineer=$1
+       AND status='completed'
+       AND DATE(issue_date)=CURRENT_DATE`,
+      [task.engineer]
+    );
+
+    const completedToday =
+      parseInt(countRes.rows[0].count);
+
+    if (completedToday >= 3) {
+      return res.json({
+        success: true,
+        message: "Daily Limit Reached (3 Tasks)"
+      });
+    }
+
+    /* ===================================================
+       6️⃣ GET RANDOM CUSTOMER
+    =================================================== */
+
+    const custRes = await pool.query(
+      `SELECT *
+       FROM customers
+       ORDER BY RANDOM()
+       LIMIT 1`
+    );
+
+    if (!custRes.rows[0]) {
+      return res.json({
+        success: true,
+        message: "No Customers Available"
+      });
+    }
+
+    const c = custRes.rows[0];
+
+    /* ===================================================
+       7️⃣ AUTO ASSIGN SAME ENGINEER
+    =================================================== */
+
+    await pool.query(
+      `INSERT INTO tasks
+       (engineer, customer, product,
+        issue, issue_date,
+        available_date,
+        status, auto_assigned)
+       VALUES
+       ($1,$2,$3,
+        'Maintenance',
+        CURRENT_DATE,
+        CURRENT_DATE,
+        'assigned', TRUE)`,
+      [
+        task.engineer,
+        c.name,
+        c.product
+      ]
+    );
+
+    res.json({
       success: true,
-      message: "Duty Over"
+      auto: "Next Task Auto Assigned"
     });
 
-  /* TIME CHECK */
-  if (new Date().getHours() >= 15)
-    return res.json({
-      success: true,
-      message: "Time Exceeded"
+  } catch (err) {
+
+    console.error(
+      "Complete Task Error:",
+      err.message
+    );
+
+    res.status(500).json({
+      error: "Auto Assign Failed"
     });
+  }
 
-  /* AUTO ASSIGN */
-  const cust = await pool.query(`
-    SELECT *
-    FROM customers
-    ORDER BY RANDOM()
-    LIMIT 1
-  `);
-
-  const c = cust.rows[0];
-
-  await pool.query(
-    `INSERT INTO tasks
-     (engineer,customer,product,
-      issue,issue_date,
-      available_date,status,auto_assigned)
-     VALUES
-     ($1,$2,$3,
-      'Maintenance',
-      CURRENT_DATE,
-      CURRENT_DATE,
-      'assigned',TRUE)`,
-    [
-      task.engineer,
-      c.name,
-      c.product
-    ]
-  );
-
-  res.json({
-    success: true,
-    auto: "Next Task Assigned"
-  });
 });
-
 /* ===================================================
    📞 BOOK COMPLAINT
 =================================================== */
@@ -755,7 +840,39 @@ router.get("/team-stats", async (req, res) => {
 
 });
 
+/* ================= LOGIN ================= */
 
+router.post("/login", async (req,res)=>{
+
+  try{
+
+    const {email,password} = req.body;
+
+    const user = await pool.query(
+      "SELECT * FROM users WHERE email=$1 AND password=$2",
+      [email,password]
+    );
+
+    if(user.rows.length === 0){
+      return res.json({
+        success:false,
+        message:"Invalid login"
+      });
+    }
+
+    res.json({
+      success:true,
+      user:user.rows[0]
+    });
+
+  }catch(err){
+
+    console.log(err);
+    res.status(500).json({error:"Login failed"});
+
+  }
+
+});
 
 /* =================================================== */
 module.exports = router;
