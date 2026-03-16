@@ -2,43 +2,6 @@ const express = require("express");
 const router = express.Router();
 const pool = require("./db");
 
-
-/* ================= LOGIN ================= */
-
-r/* ================= LOGIN ================= */
-
-router.post("/login", async (req,res)=>{
-
-  try{
-
-    const {email,password} = req.body;
-
-    const user = await pool.query(
-      "SELECT * FROM users WHERE email=$1 AND password=$2",
-      [email,password]
-    );
-
-    if(user.rows.length === 0){
-      return res.json({
-        success:false,
-        message:"Invalid login"
-      });
-    }
-
-    res.json({
-      success:true,
-      user:user.rows[0]
-    });
-
-  }catch(err){
-
-    console.log(err);
-    res.status(500).json({error:"Login failed"});
-
-  }
-
-});
-
 /* ===================================================
    1️⃣ ENGINEERS LIST
 =================================================== */
@@ -840,39 +803,6 @@ router.get("/team-stats", async (req, res) => {
 
 });
 
-/* ================= LOGIN ================= */
-
-router.post("/login", async (req,res)=>{
-
-  try{
-
-    const {email,password} = req.body;
-
-    const user = await pool.query(
-      "SELECT * FROM users WHERE email=$1 AND password=$2",
-      [email,password]
-    );
-
-    if(user.rows.length === 0){
-      return res.json({
-        success:false,
-        message:"Invalid login"
-      });
-    }
-
-    res.json({
-      success:true,
-      user:user.rows[0]
-    });
-
-  }catch(err){
-
-    console.log(err);
-    res.status(500).json({error:"Login failed"});
-
-  }
-
-});
 
 /* =================================================== */
 module.exports = router;

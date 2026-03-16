@@ -1,8 +1,7 @@
 import {
   BrowserRouter,
   Routes,
-  Route,
-  Navigate
+  Route
 } from "react-router-dom";
 
 /* 🔥 CSS */
@@ -16,32 +15,16 @@ import Dashboard from "./components/Dashboard";
 import Alerts from "./components/Alerts";
 import AssignTask from "./components/AssignTask";
 
-/* 👷 Engineers */
+/* 👷 Engineers (Tabs inside page) */
 import Engineers from "./components/Engineers";
 
-/* 📞 Calls */
+
 import Calls from "./components/Calls";
 
-/* 🔐 Login Page */
-import Login from "./components/Login";
 
 
-/* ======================================================
-   🔐 SESSION CHECK COMPONENT
-====================================================== */
-
-function PrivateRoute({ children }) {
-
-  const user = localStorage.getItem("user");
-
-  return user ? children : <Navigate to="/login" />;
-
-}
-
-
-/* ======================================================
-   APP
-====================================================== */
+/* Optional Future */
+// import Calls from "./components/Calls";
 
 function App() {
 
@@ -49,73 +32,50 @@ function App() {
 
     <BrowserRouter>
 
-      <Routes>
+      <Layout>
 
-        {/* 🔐 LOGIN PAGE */}
-        <Route
-          path="/login"
-          element={<Login />}
-        />
+        <Routes>
 
-        {/* ======================================================
-           PROTECTED ROUTES
-        ====================================================== */}
+          {/* 🏠 Dashboard */}
+          <Route
+            path="/"
+            element={<Dashboard />}
+          />
 
-        <Route
-          path="/*"
-          element={
+          {/* 🚨 Alerts */}
+          <Route
+            path="/alerts"
+            element={<Alerts />}
+          />
 
-            <PrivateRoute>
+          {/* 📝 Assign Task */}
+          <Route
+            path="/assign"
+            element={<AssignTask />}
+          />
 
-              <Layout>
+          {/* 👷 Engineers (All tabs inside) */}
+          <Route
+            path="/engineers"
+            element={<Engineers />}
+          />
 
-                <Routes>
+          {/* 📞 Future Pages */}
+           <Route path="/calls" element={<Calls />} />
+          {/*
+          <Route
+            path="/calls"
+            element={<Calls />}
+          />
+          */}
 
-                  {/* 🏠 Dashboard */}
-                  <Route
-                    path="/"
-                    element={<Dashboard />}
-                  />
+        </Routes>
 
-                  {/* 🚨 Alerts */}
-                  <Route
-                    path="/alerts"
-                    element={<Alerts />}
-                  />
-
-                  {/* 📝 Assign Task */}
-                  <Route
-                    path="/assign"
-                    element={<AssignTask />}
-                  />
-
-                  {/* 👷 Engineers */}
-                  <Route
-                    path="/engineers"
-                    element={<Engineers />}
-                  />
-
-                  {/* 📞 Calls */}
-                  <Route
-                    path="/calls"
-                    element={<Calls />}
-                  />
-
-                </Routes>
-
-              </Layout>
-
-            </PrivateRoute>
-
-          }
-        />
-
-      </Routes>
+      </Layout>
 
     </BrowserRouter>
 
   );
-
 }
 
 export default App;
